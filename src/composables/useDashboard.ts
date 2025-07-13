@@ -1,0 +1,180 @@
+import { ref, computed, reactive } from 'vue';
+import type { Website, Attack, SecurityMetrics, ChartData } from '../types/dashboard';
+
+export function useDashboard() {
+  const websites = ref<Website[]>([]);
+  const selectedWebsite = ref<Website | null>(null);
+  const isAddModalOpen = ref(false);
+  const isDetailsModalOpen = ref(false);
+
+  // Generate mock data
+  const generateMockAttacks = (count: number): Attack[] => {
+    const attackTypes: Attack['type'][] = ['sql_injection', 'xss', 'defacement', 'brute_force', 'ddos'];
+    const severities: Attack['severity'][] = ['low', 'medium', 'high', 'critical'];
+    const locations = ['United States', 'China', 'Russia', 'Germany', 'Brazil', 'India'];
+    
+    return Array.from({ length: count }, (_, i) => ({
+      id: `attack-${i}`,
+      type: attackTypes[Math.floor(Math.random() * attackTypes.length)],
+      severity: severities[Math.floor(Math.random() * severities.length)],
+      timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+      sourceIp: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+      blocked: Math.random() > 0.2,
+      details: `Attempted ${attackTypes[Math.floor(Math.random() * attackTypes.length)].replace('_', ' ')} attack`,
+      location: locations[Math.floor(Math.random() * locations.length)]
+    }));
+  };
+
+  const generateMockWebsite = (name: string, url: string): Website => {
+    const statuses: Website['status'][] = ['safe', 'warning', 'danger'];
+    const attacks = generateMockAttacks(Math.floor(Math.random() * 50) + 10);
+    
+    return {
+      id: `website-${Date.now()}-${Math.random()}`,
+      name,
+      url,
+      status: statuses[Math.floor(Math.random() * statuses.length)],
+      protections: {
+        sqlInjection: Math.random() > 0.3,
+        xssProtection: Math.random() > 0.3,
+        defacementProtection: Math.random() > 0.3,
+      },
+      metrics: {
+        totalRequests: Math.floor(Math.random() * 100000) + 10000,
+        blockedAttacks: attacks.filter(a => a.blocked).length,
+        uptime: Math.floor(Math.random() * 10) + 90,
+        responseTime: Math.floor(Math.random() * 200) + 50,
+      },
+      attacks,
+      lastChecked: new Date(),
+    };
+  };
+
+  // Initialize with sample data
+  if (websites.value.length === 0) {
+    websites.value = [
+      generateMockWebsite('E-commerce Store', 'https://shop.example.com'),
+      generateMockWebsite('Corporate Website', 'https://company.example.com'),
+      generateMockWebsite('Blog Platform', 'https://blog.example.com'),
+    ];
+  }
+
+  const securityMetrics = computed<SecurityMetrics>(() => ({
+    totalWebsites: websites.value.length,
+    activeThreats: websites.value.filter(w => w.status === 'danger').length,
+    blockedAttacks: websites.value.reduce((sum, w) => sum + w.metrics.blockedAttacks, 0),
+    uptime: websites.value.length > 0 
+      ? Math.round(websites.value.reduce((sum, w) => sum + w.metrics.uptime, 0) / websites.value.length)
+      : 0,
+  }));
+
+  const attacksOverTime = computed<ChartData>(() => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+
+    const attackCounts = last7Days.map(() => Math.floor(Math.random() * 50) + 10);
+    const blockedCounts = attackCounts.map(count => Math.floor(count * (0.7 + Math.random() * 0.2)));
+
+    return {
+      labels: last7Days,
+      datasets: [
+        {
+          label: 'Total Attacks',
+          data: attackCounts,
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          fill: true,
+        },
+        {
+          label: 'Blocked Attacks',
+          data: blockedCounts,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 2,
+          fill: true,
+        },
+      ],
+    };
+  });
+
+  const threatDistribution = computed<ChartData>(() => {
+    const types = ['SQL Injection', 'XSS', 'Defacement', 'Brute Force', 'DDoS'];
+    const data = types.map(() => Math.floor(Math.random() * 100) + 20);
+    
+    return {
+      labels: types,
+      datasets: [
+        {
+          data,
+          backgroundColor: [
+            '#ef4444',
+            '#f97316',
+            '#eab308',
+            '#3b82f6',
+            '#8b5cf6',
+          ],
+          borderWidth: 0,
+        },
+      ],
+    };
+  });
+
+  const addWebsite = (name: string, url: string) => {
+    const newWebsite = generateMockWebsite(name, url);
+    websites.value.push(newWebsite);
+    isAddModalOpen.value = false;
+  };
+
+  const removeWebsite = (id: string) => {
+    websites.value = websites.value.filter(w => w.id !== id);
+  };
+
+  const toggleProtection = (websiteId: string, protection: keyof Website['protections']) => {
+    const website = websites.value.find(w => w.id === websiteId);
+    if (website) {
+      website.protections[protection] = !website.protections[protection];
+      // Simulate status change based on protections
+      const activeProtections = Object.values(website.protections).filter(Boolean).length;
+      if (activeProtections === 3) {
+        website.status = 'safe';
+      } else if (activeProtections >= 1) {
+        website.status = 'warning';
+      } else {
+        website.status = 'danger';
+      }
+    }
+  };
+
+  const openWebsiteDetails = (website: Website) => {
+    selectedWebsite.value = website;
+    isDetailsModalOpen.value = true;
+  };
+
+  const refreshWebsiteData = (websiteId: string) => {
+    const website = websites.value.find(w => w.id === websiteId);
+    if (website) {
+      website.lastChecked = new Date();
+      website.attacks = generateMockAttacks(Math.floor(Math.random() * 20) + 5);
+      website.metrics.blockedAttacks = website.attacks.filter(a => a.blocked).length;
+    }
+  };
+
+  return {
+    websites,
+    selectedWebsite,
+    isAddModalOpen,
+    isDetailsModalOpen,
+    securityMetrics,
+    attacksOverTime,
+    threatDistribution,
+    addWebsite,
+    removeWebsite,
+    toggleProtection,
+    openWebsiteDetails,
+    refreshWebsiteData,
+  };
+}
