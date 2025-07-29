@@ -109,6 +109,8 @@ const selectedSeverity = ref('');
 const selectedType = ref('');
 
 const filteredAttacks = computed(() => {
+  if (!Array.isArray(props.attacks)) return [];
+
   return props.attacks
     .filter(attack => {
       if (selectedSeverity.value && attack.severity !== selectedSeverity.value) {

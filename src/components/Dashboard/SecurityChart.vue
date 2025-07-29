@@ -21,9 +21,13 @@ import {
   Tooltip,
   Legend,
   Filler,
+  LineController,     // ✅ Must import LineController
+  BarController,      // (optional, if you use 'bar')
+  DoughnutController, // (optional, if you use 'doughnut')
 } from 'chart.js';
 import type { ChartData } from '../../types/dashboard';
 
+// ✅ Proper controller registration
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -34,7 +38,10 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  LineController,
+  BarController,
+  DoughnutController
 );
 
 interface Props {
@@ -54,7 +61,6 @@ const createChart = () => {
   const ctx = chartCanvas.value.getContext('2d');
   if (!ctx) return;
 
-  // Destroy existing chart
   if (chartInstance) {
     chartInstance.destroy();
   }
@@ -69,9 +75,7 @@ const createChart = () => {
         legend: {
           labels: {
             color: '#ffffff',
-            font: {
-              size: 12,
-            },
+            font: { size: 12 },
           },
         },
         tooltip: {
@@ -84,20 +88,12 @@ const createChart = () => {
       },
       scales: props.type !== 'doughnut' ? {
         x: {
-          ticks: {
-            color: '#9ca3af',
-          },
-          grid: {
-            color: 'rgba(156, 163, 175, 0.1)',
-          },
+          ticks: { color: '#9ca3af' },
+          grid: { color: 'rgba(156, 163, 175, 0.1)' },
         },
         y: {
-          ticks: {
-            color: '#9ca3af',
-          },
-          grid: {
-            color: 'rgba(156, 163, 175, 0.1)',
-          },
+          ticks: { color: '#9ca3af' },
+          grid: { color: 'rgba(156, 163, 175, 0.1)' },
         },
       } : undefined,
     },

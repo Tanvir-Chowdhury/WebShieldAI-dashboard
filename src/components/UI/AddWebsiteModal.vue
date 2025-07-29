@@ -6,7 +6,7 @@
   >
     <div class="card p-6 w-full max-w-md animate-slide-up">
       <h2 class="text-xl font-semibold text-white mb-4">Add New Website</h2>
-      
+
       <form @submit.prevent="handleSubmit">
         <div class="space-y-4">
           <div>
@@ -22,7 +22,7 @@
               placeholder="My Website"
             />
           </div>
-          
+
           <div>
             <label for="url" class="block text-sm font-medium text-gray-300 mb-2">
               Website URL
@@ -37,21 +37,10 @@
             />
           </div>
         </div>
-        
+
         <div class="flex justify-end space-x-3 mt-6">
-          <button
-            type="button"
-            @click="$emit('close')"
-            class="btn-secondary"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            class="btn-primary"
-          >
-            Add Website
-          </button>
+          <button type="button" @click="$emit('close')" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Add Website</button>
         </div>
       </form>
     </div>
@@ -80,6 +69,7 @@ const form = reactive({
 
 const handleSubmit = () => {
   if (form.name && form.url) {
+    console.log("Adding website:", form.name, form.url); // ✅ Debugging line
     emit('add', form.name, form.url);
     form.name = '';
     form.url = '';

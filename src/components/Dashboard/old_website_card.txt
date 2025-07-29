@@ -18,21 +18,21 @@
           @click="emitRefresh"
           title="Refresh"
         >
-          <ArrowPathIcon class="w-5 h-5" />
+          🔄
         </button>
         <button
           class="hover:text-white transition"
           @click="emitDetails"
           title="View Details"
         >
-          <EyeIcon class="w-5 h-5" />
+          👁️
         </button>
         <button
           class="hover:text-white transition"
           @click="emitRemove"
           title="Delete"
         >
-          <TrashIcon class="w-5 h-5" />
+          🗑️
         </button>
       </div>
     </div>
@@ -93,14 +93,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRefs, computed } from "vue";
+import { ref, toRefs } from "vue";
 import ToggleSwitch from "../UI/ToggleSwitch.vue";
 import CodeModal from "../UI/CodeModal.vue";
-import {
-  ArrowPathIcon,
-  EyeIcon,
-  TrashIcon
-} from "@heroicons/vue/24/outline";
 
 // Props
 const props = defineProps<{ website: any }>();
@@ -122,27 +117,20 @@ const protections = ref([
 
 const showModal = ref(false);
 const targetToggleIndex = ref<number | null>(null);
+const popupCode = `console.log('Your unique security code here!');`;
 
-// Dynamic popup script code
-// const popupCode = computed(() => {
-//   return `http://127.0.0.1:8000/cdn/webshield-agent.js?wid=${encodeURIComponent(website.value.url)}`;
-// });
-const popupCode = computed(() => {
-  return `http://127.0.0.1:8000/cdn/webshield-agent.js?wid=${website.value.id}`;
-});
-
-// Emit Functions
+// Button Emitters
 function emitRefresh() {
-  emit('refresh', website.value.id);
+  emit('refresh', website.value.id); // ✅ Use website.value
 }
 function emitDetails() {
-  emit('details', website.value);
+  emit('details', website.value); // ✅ Use website.value
 }
 function emitRemove() {
-  emit('remove', website.value.id);
+  emit('remove', website.value.id); // ✅ Use website.value
 }
 
-// Helper Functions
+// Existing Methods
 function statusClass(status: string) {
   return status === 'online'
     ? 'bg-green-400'

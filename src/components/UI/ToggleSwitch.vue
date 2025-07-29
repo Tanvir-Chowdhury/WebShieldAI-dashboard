@@ -1,25 +1,35 @@
 <template>
-  <button
-    @click="$emit('toggle')"
-    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800"
-    :class="enabled ? 'bg-blue-600' : 'bg-gray-600'"
-  >
-    <span
-      class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200"
-      :class="enabled ? 'translate-x-6' : 'translate-x-1'"
+  <label class="flex items-center cursor-pointer">
+    <!-- Hidden checkbox -->
+    <input
+      type="checkbox"
+      class="hidden"
+      :checked="modelValue"
+      @change="handleClick"
     />
-  </button>
+    <!-- Toggle background -->
+    <div
+      :class="[
+        'w-10 h-5 rounded-full transition-colors duration-300',
+        modelValue ? 'bg-blue-500' : 'bg-gray-600'
+      ]"
+    >
+      <!-- Toggle circle -->
+      <div
+        :class="[
+          'w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-300',
+          modelValue ? 'translate-x-5' : 'translate-x-0'
+        ]"
+      ></div>
+    </div>
+  </label>
 </template>
 
 <script setup lang="ts">
-interface Props {
-  enabled: boolean;
-}
+defineProps<{ modelValue: boolean }>();
+const emit = defineEmits(['update:modelValue', 'attemptToggle']);
 
-interface Emits {
-  (e: 'toggle'): void;
+function handleClick() {
+  emit('attemptToggle');
 }
-
-defineProps<Props>();
-defineEmits<Emits>();
 </script>
